@@ -1,0 +1,17 @@
+:root{font-family:system-ui, 'Segoe UI', Roboto, Helvetica, Arial;}
+body{margin:0;background:#f7fbf7;color:#062;}
+.container{max-width:800px;margin:32px auto;padding:24px;background:#fff;border-radius:8px;box-shadow:0 6px 20px rgba(0,0,0,.06);}
+h1{margin:0 0 8px}
+.chat{margin-top:16px}
+.messages{height:220px;overflow:auto;border:1px solid #eee;padding:12px;border-radius:6px;background:#fafafa}
+.messages .msg{margin-bottom:10px}
+.messages .user{color:#064}
+.messages .bot{color:#333}
+form{display:flex;gap:8px;margin-top:8px}
+input[type=text],input,button{font-size:14px;padding:8px;border-radius:6px}
+input{flex:1;border:1px solid #ddd}
+button{background:#0a6;border:none;color:#fff;cursor:pointer;padding:8px 12px}
+.tracker{margin-top:24px;border-top:1px dashed #eee;padding-top:16px}
+.controls{display:flex;gap:8px}
+#activities{list-style:none;padding-left:0}
+.summary{margin-top:12px;font-weight:600}

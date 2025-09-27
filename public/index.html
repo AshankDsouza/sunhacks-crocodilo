@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Cocodrilo — Track your C2O footprint</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <main class="container">
+      <h1>Cocodrilo</h1>
+      <p>A small demo site to chat with a Gemini model (via secure server) and learn about lowering your C2O footprint.</p>
+
+      <section class="chat">
+        <div id="messages" class="messages"></div>
+        <form id="chat-form">
+          <input id="input" autocomplete="off" placeholder="Ask about sustainable choices..." />
+          <button type="submit">Send</button>
+        </form>
+      </section>
+
+      <section class="tracker">
+        <h2>Your C2O Snapshot</h2>
+        <p>Enter simple activities to estimate your carbon-to-O2 (C2O) footprint.</p>
+        <div class="controls">
+          <input id="activity" placeholder="e.g., drive 10 miles" />
+          <button id="add-activity">Add</button>
+        </div>
+        <ul id="activities"></ul>
+        <div class="summary">Estimated C2O: <span id="c2o">0</span> kg</div>
+      </section>
+    </main>
+
+    <script src="chat.js"></script>
+  </body>
+</html>
