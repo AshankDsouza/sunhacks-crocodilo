@@ -3,9 +3,6 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 
-// Initialize the Google Generative AI client
-
-
 dotenv.config();
 
 const app = express();
@@ -15,61 +12,98 @@ app.use(express.static('public'));
 
 const PORT = process.env.PORT || 3000;
 
-//Using gemini import instead of env file that was previously deleted.
-
-// const GEMINI_ENDPOINT = process.env.GEMINI_ENDPOINT; // e.g., https://api.example.com/v1/chat:send
-// const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-
-// if (!GEMINI_ENDPOINT || !GEMINI_API_KEY) {
-//   console.warn('GEMINI_ENDPOINT or GEMINI_API_KEY not set. Chat endpoint will fail until configured.');
-// }
-
+// In-memory storage for conversations (use database in production)
+const conversations = new Map();
 
 app.post('/api/chat', async (req, res) => {
-  const { message, conversation } = req.body;
-  if (!message) return res.status(400).json({ error: 'message is required' });
+  const { message, conversationId, conversation } = req.body;
+  
+  if (!message) {
+    return res.status(400).json({ error: 'message is required' });
+  }
 
   try {
-    const payload = {
-      // This payload is intentionally generic; adapt to your Gemini-compatible API shape.
-      input: message,
-      conversation: conversation || null
-    };
-
     const ai = new GoogleGenerativeAI("AIzaSyAE-aiX46n64Go_CkRmDtXRJO0De6MGc0A");
+    const model = ai.getGenerativeModel({ model: "gemini-2.0-flash" });
 
-    console.log({ai});
- const model = ai.getGenerativeModel({ model: "gemini-2.0-flash" });
-
-    // Call the model
-    const response = await model.generateContent(message);
-    console.log('Gemini response', response);
-
-    // convert response to json
-    // Note: Uncomment and adapt the following lines based on your actual API response structure.
-    // const data = response; // await response.json();
-    const text =
-      response?.response?.candidates?.[0]?.content?.parts?.[0]?.text ||
-      "No response generated.";
-
-    // const candidates = data.candidates || [];
-    // console.log({candidates});
-
-    console.log(text)
+    // Get or create conversation history
+    const sessionId = conversationId || 'default';
+    let chatHistory = conversations.get(sessionId) || [];
     
-    
+    // If conversation array is provided in request, use that instead
+    if (conversation && Array.isArray(conversation)) {
+      chatHistory = conversation;
+    }
 
-    // if (!response.ok) {
-    //   const text = await response.text();
-    //   return res.status(response.status).json({ error: text });
-    // }
-
+    // Build the full conversation context
+    let fullPrompt = '';
     
-    res.json({reply:text});
+    // Add previous conversation context
+    if (chatHistory.length > 0) {
+      fullPrompt += "Previous conversation:\n";
+      chatHistory.forEach(msg => {
+        if (msg.role === 'user') {
+          fullPrompt += `User: ${msg.content}\n`;
+        } else if (msg.role === 'assistant') {
+          fullPrompt += `Assistant: ${msg.content}\n`;
+        }
+      });
+      fullPrompt += '\n';
+    }
+    
+    // Add current message
+    fullPrompt += `User: ${message}\nAssistant:`;
+
+    console.log('Full prompt being sent:', fullPrompt);
+
+    // Generate response with full context
+    const response = await model.generateContent(fullPrompt);
+    
+    const text = response?.response?.candidates?.[0]?.content?.parts?.[0]?.text || 
+                 "No response generated.";
+
+    // Update conversation history
+    chatHistory.push({ role: 'user', content: message });
+    chatHistory.push({ role: 'assistant', content: text });
+    
+    // Store updated conversation (limit to last 20 messages to prevent memory issues)
+    if (chatHistory.length > 20) {
+      chatHistory = chatHistory.slice(-20);
+    }
+    conversations.set(sessionId, chatHistory);
+
+    console.log('Generated response:', text);
+    
+    res.json({
+      reply: text,
+      conversationId: sessionId,
+      conversation: chatHistory
+    });
+
   } catch (err) {
-    console.error('Chat proxy error', err);
+    console.error('Chat proxy error:', err);
     res.status(500).json({ error: 'proxy error' });
   }
+});
+
+// Optional: Get conversation history
+app.get('/api/conversation/:id', (req, res) => {
+  const conversationId = req.params.id;
+  const history = conversations.get(conversationId) || [];
+  res.json({ conversation: history });
+});
+
+// Optional: Clear conversation history
+app.delete('/api/conversation/:id', (req, res) => {
+  const conversationId = req.params.id;
+  conversations.delete(conversationId);
+  res.json({ message: 'Conversation cleared' });
+});
+
+// Optional: List all active conversations
+app.get('/api/conversations', (req, res) => {
+  const activeConversations = Array.from(conversations.keys());
+  res.json({ conversations: activeConversations });
 });
 
 app.listen(PORT, () => {
