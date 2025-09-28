@@ -22,10 +22,10 @@ jobs:
       - name: Deploy to Remote Server
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.REMOTE_USER }}@${{ secrets.REMOTE_HOST }} << 'EOF'
-            cd /crocodilo/sunhacks-crocodilo
+            cd crocodilo/sunhacks-crocodilo/
             git pull origin main
-            docker build -t nodejs-app .
-            docker stop nodejs-app || true
-            docker rm nodejs-app || true
-            docker run -d -p 3000:3000 --name nodejs-app nodejs-app
+            sudo docker build -t nodejs-app .
+            sudo docker stop nodejs-app || true
+            sudo docker rm nodejs-app || true
+            sudo docker run -d -p 3000:3000 --name nodejs-app nodejs-app
           EOF
