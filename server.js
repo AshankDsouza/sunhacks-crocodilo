@@ -14,12 +14,15 @@ app.use(express.json());
 app.use(express.static('public'));
 
 const PORT = process.env.PORT || 3000;
-const GEMINI_ENDPOINT = process.env.GEMINI_ENDPOINT; // e.g., https://api.example.com/v1/chat:send
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
-if (!GEMINI_ENDPOINT || !GEMINI_API_KEY) {
-  console.warn('GEMINI_ENDPOINT or GEMINI_API_KEY not set. Chat endpoint will fail until configured.');
-}
+//Using gemini import instead of env file that was previously deleted.
+
+// const GEMINI_ENDPOINT = process.env.GEMINI_ENDPOINT; // e.g., https://api.example.com/v1/chat:send
+// const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+
+// if (!GEMINI_ENDPOINT || !GEMINI_API_KEY) {
+//   console.warn('GEMINI_ENDPOINT or GEMINI_API_KEY not set. Chat endpoint will fail until configured.');
+// }
 
 
 app.post('/api/chat', async (req, res) => {
@@ -44,11 +47,15 @@ app.post('/api/chat', async (req, res) => {
 
     // convert response to json
     // Note: Uncomment and adapt the following lines based on your actual API response structure.
-    const data = response; // await response.json();
+    // const data = response; // await response.json();
+    const text =
+      response?.response?.candidates?.[0]?.content?.parts?.[0]?.text ||
+      "No response generated.";
+
     // const candidates = data.candidates || [];
     // console.log({candidates});
 
-    console.log(JSON.stringify(data))
+    console.log(text)
     
     
 
@@ -58,7 +65,7 @@ app.post('/api/chat', async (req, res) => {
     // }
 
     
-    res.json(data);
+    res.json({reply:text});
   } catch (err) {
     console.error('Chat proxy error', err);
     res.status(500).json({ error: 'proxy error' });
