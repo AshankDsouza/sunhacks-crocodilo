@@ -1,0 +1,13 @@
+
+// insert files to ignore in git here
+node_modules
+.env
+.DS_Store
+.vscode
+npm-debug.log
+yarn-error.log
+dist
+coverage
+.idea
+*.iml
+*.log
