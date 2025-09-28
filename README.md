@@ -8,6 +8,7 @@ Files of interest
 - `public/styles.css` — Basic styles.
 - `public/chat.js` — Frontend logic for chat and the toy C2O tracker.
 - `.env.example` — Environment variables example.
+- 
 
 Quick start
 1. Copy `.env.example` to `.env` and set `GEMINI_ENDPOINT` and `GEMINI_API_KEY`.
