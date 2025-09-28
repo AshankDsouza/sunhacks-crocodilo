@@ -15,3 +15,5 @@ button{background:#0a6;border:none;color:#fff;cursor:pointer;padding:8px 12px}
 .controls{display:flex;gap:8px}
 #activities{list-style:none;padding-left:0}
 .summary{margin-top:12px;font-weight:600}
+.mascot_welcome{position:fixed;top:50%;left:16px;transform:translateY(-50%);width:280px;opacity:.8;z-index:-1;}
+.mascotright{position:fixed;top:50%;right:16px;transform:translateY(-50%);width:280px;opacity:.8;z-index:-1;}
