@@ -10,10 +10,13 @@ const CustomEdge = ({
   sourcePosition,
   targetPosition,
   style,
+  data,
 }) => {
   const edgeRef = useRef(null);
   const dotRef = useRef(null);
   const animationRef = useRef(null);
+  const startTimeRef = useRef(null);
+  
   const [path] = getBezierPath({
     sourceX,
     sourceY,
@@ -23,24 +26,39 @@ const CustomEdge = ({
     targetPosition,
   });
 
-  // Continuous animation function
+  // One-time animation function
   const animateDot = useCallback(() => {
     if (!edgeRef.current || !dotRef.current) return;
     
+    const currentTime = performance.now();
+    if (!startTimeRef.current) {
+      startTimeRef.current = currentTime;
+    }
+    
     const pathLength = edgeRef.current.getTotalLength();
-    const speed = 50; // Lower number = faster animation
-    const progress = (performance.now() / speed) % pathLength;
-    const point = edgeRef.current.getPointAtLength(progress);
+    const duration = pathLength * 20; // Adjust speed: higher number = slower
+    const elapsed = currentTime - startTimeRef.current;
+    const progress = Math.min(elapsed / duration, 1);
+    
+    const point = edgeRef.current.getPointAtLength(progress * pathLength);
     
     // Update dot position
     dotRef.current.setAttribute('cx', point.x);
     dotRef.current.setAttribute('cy', point.y);
     
-    animationRef.current = requestAnimationFrame(animateDot);
-  }, []);
+    if (progress < 1) {
+      animationRef.current = requestAnimationFrame(animateDot);
+    } else {
+      // Animation completed, notify parent if callback exists
+      if (data?.onAnimationComplete) {
+        data.onAnimationComplete(id);
+      }
+    }
+  }, [id, data]);
 
   useEffect(() => {
-    // Start continuous animation
+    // Reset start time and start animation
+    startTimeRef.current = null;
     animationRef.current = requestAnimationFrame(animateDot);
     
     return () => {

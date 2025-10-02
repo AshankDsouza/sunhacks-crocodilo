@@ -5,9 +5,54 @@ import { SimulationGenerator } from './Generator';
 const GeneratorNode = ({ id, data, isConnectable }) => {
   const [generator] = useState(() => new SimulationGenerator(data.label, 2000));
   const [phase, setPhase] = useState('passive');
-  const [count, setCount] = useState(0);
+  //const [count, setCount] = useState(0);
   const [isEditing, setIsEditing] = useState(false);
   const [editLabel, setEditLabel] = useState(data.label);
+
+  const [jobQueue, setJobQueue] = useState(data.jobQueue || []);
+
+  const [time, setTime] = useState(0);
+
+  // on recieveing a new data.step = true, we deque one job from jobQueue and add it to generator
+  useEffect(() => {
+    if (data.step) {
+      if (jobQueue.length > 0) {
+        const nextJob = jobQueue[0];
+        setJobQueue(prevQueue => prevQueue.slice(1));
+        // TODO: change phase to outputting for a brief moment
+        // also do the output animation/effect
+        //setPhase('outputting');
+        // generator.addJob(nextJob);
+        console.log(`Generator ${id} added job:`, nextJob);
+        setTime(prevTime => prevTime + data.processingTime);
+
+        // send a signal acknowledging that we moved one step 
+        data.onStepComplete(id, nextJob);
+
+      } else {
+        console.log(`Generator ${id} has no jobs to add.`);
+      }
+    }
+  }, [data.step]);
+
+
+
+
+  // add a watch on prop data.jobQueue to update the generator's job queue
+  useEffect(() => {
+    setJobQueue(data.jobQueue || []);
+  }, [data.jobQueue]);
+
+  useEffect(() => {
+    if (jobQueue.length > 0) {
+      setPhase('active');
+    }else {
+      setPhase('passive');
+    }
+
+  }, [jobQueue]);
+
+
 
   useEffect(() => {
     generator.setCallback('onPhaseChange', (newPhase) => {
@@ -17,7 +62,7 @@ const GeneratorNode = ({ id, data, isConnectable }) => {
 
     generator.setCallback('onOutput', (output) => {
       console.log(`Generator ${id} produced output:`, output);
-      setCount(output.id.replace('job', ''));
+      //setCount(output.id.replace('job', ''));
       // Trigger animation when output is generated
       if (data.onOutput) {
         console.log(`Calling onOutput callback for ${id}`);
@@ -64,7 +109,7 @@ const GeneratorNode = ({ id, data, isConnectable }) => {
     switch (phase) {
       case 'active': return '#4caf50';
       case 'passive': return '#9e9e9e';
-      case 'finishing': return '#ff9800';
+      case 'outputting': return '#ff9800';
       default: return '#9e9e9e';
     }
   };
@@ -127,7 +172,10 @@ const GeneratorNode = ({ id, data, isConnectable }) => {
       </div>
       
       <div style={{ fontSize: '10px', marginBottom: '8px' }}>
-        Jobs: {count}
+        Jobs: {JSON.stringify(jobQueue)}
+      </div>
+      <div style={{ fontSize: '10px', marginBottom: '8px' }}>
+        Time: {time}
       </div>
       
       <div style={{ display: 'flex', gap: '4px', justifyContent: 'center', marginBottom: '4px' }}>

@@ -15,7 +15,6 @@ import { initialNodes, initialEdges } from './data/flowData';
 export default function App() {
   const [nodes, setNodes] = useState(initialNodes);
   const [edges, setEdges] = useState(initialEdges);
-  const [nodeCounter, setNodeCounter] = useState(3); // Start from 3 since we have gen1 and gen2
   
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -34,33 +33,6 @@ export default function App() {
     []
   );
 
-  // Add new generator node
-  const handleAddNode = useCallback((nodeName) => {
-    const newNodeId = `gen${nodeCounter}`;
-    const newNode = {
-      id: newNodeId,
-      type: 'generator',
-      position: {
-        x: 50 + (nodeCounter - 1) * 150, // Space them out horizontally
-        y: 100 + ((nodeCounter - 1) % 3) * 150 // Create rows of 3
-      },
-      data: { 
-        label: nodeName
-      }
-    };
-    
-    setNodes(prevNodes => [...prevNodes, newNode]);
-    setNodeCounter(prev => prev + 1);
-  }, [nodeCounter]);
-
-  // Delete generator node
-  const handleDeleteNode = useCallback((nodeId) => {
-    setNodes(prevNodes => prevNodes.filter(node => node.id !== nodeId));
-    setEdges(prevEdges => prevEdges.filter(edge => 
-      edge.source !== nodeId && edge.target !== nodeId
-    ));
-  }, []);
-
   // Update node label
   const handleUpdateNodeLabel = useCallback((nodeId, newLabel) => {
     setNodes(prevNodes => 
@@ -70,6 +42,65 @@ export default function App() {
           : node
       )
     );
+  }, []);
+
+  // Handle animation completion by reverting edge back to normal
+  const handleAnimationComplete = useCallback((edgeId) => {
+    console.log(`Animation completed for edge: ${edgeId}`);
+    
+    setEdges(prevEdges => 
+      prevEdges.map(edge => 
+        edge.id === edgeId 
+          ? { 
+              ...edge, 
+              type: undefined, // Revert to default edge type
+              data: { ...edge.data, onAnimationComplete: undefined }
+            }
+          : edge
+      )
+    );
+  }, []);
+
+  // Handle step completion by change the edge to the custom animated edge
+  const handleStepComplete = useCallback((generatorId, job) => {
+    console.log(`Step completed for ${generatorId}:`, job);
+
+    // Change edge to animated custom edge
+    setEdges(prevEdges => 
+      prevEdges.map(edge => 
+        edge.source === generatorId 
+          ? { 
+              ...edge, 
+              type: 'custom',
+              data: { 
+                ...edge.data,
+                onAnimationComplete: handleAnimationComplete 
+              }
+            }
+          : edge
+      )
+    );
+  }, [handleAnimationComplete]);
+
+  // Handle run action - sets Generator1.data.step = true
+  const handleRun = useCallback(() => {
+    setNodes(prevNodes => 
+      prevNodes.map(node => 
+        node.id === 'gen1' 
+          ? { ...node, data: { ...node.data, step: true } }
+          : node
+      )
+    );
+    // Reset step to false after a short delay to allow for next steps
+    setTimeout(() => {
+      setNodes(prevNodes => 
+        prevNodes.map(node => 
+          node.id === 'gen1' 
+            ? { ...node, data: { ...node.data, step: false } }
+            : node
+        )
+      );
+    }, 100); // Adjust delay as needed
   }, []);
 
   // Modal handlers
@@ -89,7 +120,8 @@ export default function App() {
     data: {
       ...node.data,
       onUpdateLabel: handleUpdateNodeLabel,
-      onOpenModal: handleOpenModal
+      onOpenModal: handleOpenModal,
+      onStepComplete: handleStepComplete
     }
   }));
 
@@ -117,9 +149,7 @@ export default function App() {
       
       <InstructionsPanel />
       <ControlPanel 
-        onAddNode={handleAddNode}
-        onDeleteNode={handleDeleteNode}
-        nodes={nodes}
+        onRun={handleRun}
       />
       
       {/* Global Modal */}
