@@ -28,16 +28,11 @@ jobs:
             # Stop and remove existing containers
             sudo docker compose down || true
             
-            # Clean up unused Docker resources to free disk space
-            sudo docker system prune -af --volumes || true
-            sudo docker image prune -af || true
-            sudo docker container prune -f || true
+            # Build with no cache to ensure fresh build
+            sudo docker compose build --no-cache
             
-            # Remove ALL images to force complete rebuild from scratch
-            sudo docker image rm -f $(sudo docker images -aq) || true
-            
-            # Build and start all services with docker-compose (no cache)
-            sudo docker compose up --build --no-cache -d
+            # Start all services
+            sudo docker compose up -d
             
             # Show status of running containers
             sudo docker compose ps
