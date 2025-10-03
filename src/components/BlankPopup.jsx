@@ -1,6 +1,62 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 
-const BlankPopup = ({ isOpen, onClose, nodeId }) => {
+const BlankPopup = ({ isOpen, onClose, nodeId, nodeData, onUpdateNodeData }) => {
+  const [formData, setFormData] = useState({
+    label: '',
+    processingTime: 10,
+    jobQueue: [],
+    inports: [],
+    outports: []
+  });
+
+  // Initialize form data when modal opens
+  useEffect(() => {
+    if (isOpen && nodeData) {
+      setFormData({
+        label: nodeData.label || '',
+        processingTime: nodeData.processingTime || 10,
+        jobQueue: nodeData.jobQueue || [],
+        inports: nodeData.inports || ['input'],
+        outports: nodeData.outports || ['output']
+      });
+    }
+  }, [isOpen, nodeData]);
+
+  const handleInputChange = (field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleSave = () => {
+    if (onUpdateNodeData && nodeId) {
+      onUpdateNodeData(nodeId, formData);
+    }
+    onClose();
+  };
+
+  const addPort = (portType) => {
+    const newPortName = portType === 'inports' ? `input_${formData[portType].length + 1}` : `output_${formData[portType].length + 1}`;
+    setFormData(prev => ({
+      ...prev,
+      [portType]: [...prev[portType], newPortName]
+    }));
+  };
+
+  const removePort = (portType, index) => {
+    setFormData(prev => ({
+      ...prev,
+      [portType]: prev[portType].filter((_, i) => i !== index)
+    }));
+  };
+
+  const updatePortName = (portType, index, newName) => {
+    setFormData(prev => ({
+      ...prev,
+      [portType]: prev[portType].map((port, i) => i === index ? newName : port)
+    }));
+  };
   // Handle ESC key to close modal
   useEffect(() => {
     const handleKeyDown = (event) => {
@@ -97,52 +153,231 @@ const BlankPopup = ({ isOpen, onClose, nodeId }) => {
           </button>
         </div>
 
-        {/* Content Area - Full screen blank canvas */}
+        {/* Content Area - Generator Configuration Form */}
         <div style={{
           flex: 1,
-          padding: '60px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
+          padding: '32px',
           backgroundColor: '#ffffff',
-          position: 'relative'
+          overflowY: 'auto'
         }}>
-          <div style={{
-            textAlign: 'center',
-            color: '#ccc',
-            fontSize: '28px',
-            userSelect: 'none'
-          }}>
-            <div style={{ 
-              fontSize: '120px', 
-              marginBottom: '30px',
-              opacity: 0.3 
-            }}>
-              📝
+          <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+            
+            {/* Basic Properties Section */}
+            <div style={{ marginBottom: '40px' }}>
+              <h2 style={{ 
+                color: '#333', 
+                fontSize: '24px', 
+                marginBottom: '20px',
+                borderBottom: '2px solid #e0e0e0',
+                paddingBottom: '10px'
+              }}>
+                Basic Properties
+              </h2>
+              
+              <div style={{ display: 'grid', gap: '20px' }}>
+                <div>
+                  <label style={{ 
+                    display: 'block', 
+                    marginBottom: '8px', 
+                    fontWeight: 'bold',
+                    color: '#555'
+                  }}>
+                    Generator Name:
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.label}
+                    onChange={(e) => handleInputChange('label', e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '12px',
+                      border: '2px solid #e0e0e0',
+                      borderRadius: '8px',
+                      fontSize: '16px'
+                    }}
+                    placeholder="Enter generator name"
+                  />
+                </div>
+                
+                <div>
+                  <label style={{ 
+                    display: 'block', 
+                    marginBottom: '8px', 
+                    fontWeight: 'bold',
+                    color: '#555'
+                  }}>
+                    Processing Time (ms):
+                  </label>
+                  <input
+                    type="number"
+                    value={formData.processingTime}
+                    onChange={(e) => handleInputChange('processingTime', parseInt(e.target.value) || 0)}
+                    style={{
+                      width: '200px',
+                      padding: '12px',
+                      border: '2px solid #e0e0e0',
+                      borderRadius: '8px',
+                      fontSize: '16px'
+                    }}
+                    min="1"
+                  />
+                </div>
+              </div>
             </div>
-            <h2 style={{ 
-              color: '#999', 
-              fontWeight: 'normal',
-              fontSize: '32px',
-              marginBottom: '15px'
-            }}>
-              Blank Canvas
-            </h2>
-            <p style={{ 
-              fontSize: '18px',
-              color: '#bbb',
-              margin: '0'
-            }}>
-              Node: <strong style={{ color: '#666' }}>{nodeId}</strong>
-            </p>
-            <p style={{ 
-              marginTop: '20px', 
-              fontSize: '16px',
-              color: '#ccc',
-              fontStyle: 'italic'
-            }}>
-              Ready for your content...
-            </p>
+
+            {/* Inports Section */}
+            <div style={{ marginBottom: '40px' }}>
+              <h2 style={{ 
+                color: '#333', 
+                fontSize: '24px', 
+                marginBottom: '20px',
+                borderBottom: '2px solid #e0e0e0',
+                paddingBottom: '10px'
+              }}>
+                Input Ports
+              </h2>
+              
+              {formData.inports.map((port, index) => (
+                <div key={index} style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '12px', 
+                  marginBottom: '12px' 
+                }}>
+                  <input
+                    type="text"
+                    value={port}
+                    onChange={(e) => updatePortName('inports', index, e.target.value)}
+                    style={{
+                      flex: 1,
+                      padding: '10px',
+                      border: '2px solid #e0e0e0',
+                      borderRadius: '6px',
+                      fontSize: '14px'
+                    }}
+                    placeholder="Port name"
+                  />
+                  <button
+                    onClick={() => removePort('inports', index)}
+                    style={{
+                      padding: '10px 16px',
+                      backgroundColor: '#dc3545',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '6px',
+                      cursor: 'pointer',
+                      fontSize: '14px'
+                    }}
+                  >
+                    Remove
+                  </button>
+                </div>
+              ))}
+              
+              <button
+                onClick={() => addPort('inports')}
+                style={{
+                  padding: '10px 20px',
+                  backgroundColor: '#28a745',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  fontSize: '14px'
+                }}
+              >
+                + Add Input Port
+              </button>
+            </div>
+
+            {/* Outports Section */}
+            <div style={{ marginBottom: '40px' }}>
+              <h2 style={{ 
+                color: '#333', 
+                fontSize: '24px', 
+                marginBottom: '20px',
+                borderBottom: '2px solid #e0e0e0',
+                paddingBottom: '10px'
+              }}>
+                Output Ports
+              </h2>
+              
+              {formData.outports.map((port, index) => (
+                <div key={index} style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '12px', 
+                  marginBottom: '12px' 
+                }}>
+                  <input
+                    type="text"
+                    value={port}
+                    onChange={(e) => updatePortName('outports', index, e.target.value)}
+                    style={{
+                      flex: 1,
+                      padding: '10px',
+                      border: '2px solid #e0e0e0',
+                      borderRadius: '6px',
+                      fontSize: '14px'
+                    }}
+                    placeholder="Port name"
+                  />
+                  <button
+                    onClick={() => removePort('outports', index)}
+                    style={{
+                      padding: '10px 16px',
+                      backgroundColor: '#dc3545',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '6px',
+                      cursor: 'pointer',
+                      fontSize: '14px'
+                    }}
+                  >
+                    Remove
+                  </button>
+                </div>
+              ))}
+              
+              <button
+                onClick={() => addPort('outports')}
+                style={{
+                  padding: '10px 20px',
+                  backgroundColor: '#28a745',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  fontSize: '14px'
+                }}
+              >
+                + Add Output Port
+              </button>
+            </div>
+
+            {/* Job Queue Display (Read-only for now) */}
+            <div style={{ marginBottom: '20px' }}>
+              <h2 style={{ 
+                color: '#333', 
+                fontSize: '24px', 
+                marginBottom: '20px',
+                borderBottom: '2px solid #e0e0e0',
+                paddingBottom: '10px'
+              }}>
+                Current Job Queue
+              </h2>
+              
+              <div style={{
+                padding: '16px',
+                backgroundColor: '#f8f9fa',
+                border: '2px solid #e0e0e0',
+                borderRadius: '8px',
+                fontFamily: 'monospace',
+                fontSize: '14px'
+              }}>
+                {JSON.stringify(formData.jobQueue, null, 2)}
+              </div>
+            </div>
           </div>
         </div>
 
@@ -160,7 +395,7 @@ const BlankPopup = ({ isOpen, onClose, nodeId }) => {
             color: '#666',
             fontSize: '16px'
           }}>
-            Full-screen editor for node configuration
+            Configure generator properties and ports
           </div>
           <div style={{ display: 'flex', gap: '16px' }}>
             <button
@@ -182,7 +417,7 @@ const BlankPopup = ({ isOpen, onClose, nodeId }) => {
               Cancel
             </button>
             <button
-              onClick={onClose}
+              onClick={handleSave}
               style={{
                 padding: '14px 28px',
                 backgroundColor: '#007bff',

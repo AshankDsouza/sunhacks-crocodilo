@@ -114,6 +114,17 @@ export default function App() {
     setEditingNodeId(null);
   }, []);
 
+  // Handle node property updates from the modal
+  const handleUpdateNodeData = useCallback((nodeId, updatedData) => {
+    setNodes(prevNodes => 
+      prevNodes.map(node => 
+        node.id === nodeId 
+          ? { ...node, data: { ...node.data, ...updatedData } }
+          : node
+      )
+    );
+  }, []);
+
   // Update nodes to include the label update callback and modal handler
   const nodesWithCallbacks = nodes.map(node => ({
     ...node,
@@ -124,6 +135,9 @@ export default function App() {
       onStepComplete: handleStepComplete
     }
   }));
+
+  // Get current editing node data
+  const editingNodeData = editingNodeId ? nodes.find(node => node.id === editingNodeId)?.data : null;
 
   // Define custom edge and node types
   const edgeTypes = {
@@ -157,6 +171,8 @@ export default function App() {
         isOpen={isModalOpen}
         onClose={handleCloseModal}
         nodeId={editingNodeId}
+        nodeData={editingNodeData}
+        onUpdateNodeData={handleUpdateNodeData}
       />
     </div>
   );
