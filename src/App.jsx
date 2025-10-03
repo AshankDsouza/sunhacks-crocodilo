@@ -120,6 +120,71 @@ export default function App() {
     setNodes(prevNodes => [...prevNodes, newNode]);
   }, []);
 
+  // Convert React Flow nodes to database format
+  const convertNodesToDatabase = (reactFlowNodes) => {
+    return reactFlowNodes.map(node => ({
+      id: parseInt(node.id.replace('node-', '')) || null, // Extract ID or null for new nodes
+      label: node.data.label || 'Untitled Node',         // Dummy label if missing
+      processing_time: node.data.processingTime || 10,   // Dummy processing time if missing
+      node_type: node.type || 'generator'                // Dummy type if missing
+    }));
+  };
+
+  // Convert React Flow edges to database format
+  const convertEdgesToDatabase = (reactFlowEdges) => {
+    return reactFlowEdges.map(edge => ({
+      id: parseInt(edge.id.replace('edge-', '')) || null, // Extract ID or null for new edges
+      source_node_id: parseInt(edge.source.replace('node-', '')) || null, // Dummy null if parsing fails
+      target_node_id: parseInt(edge.target.replace('node-', '')) || null,  // Dummy null if parsing fails
+      edge_type: edge.type || 'normal'  // Dummy type if missing (though we're not saving this)
+    }));
+  };
+
+  // Handle saving the project
+  const handleSaveProject = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      
+      const projectId = 1; // For now, we're working with project ID 1
+      
+      // Convert current state to database format
+      const dbNodes = convertNodesToDatabase(nodes);
+      const dbEdges = convertEdgesToDatabase(edges);
+      
+      const payload = {
+        nodes: dbNodes,
+        edges: dbEdges
+      };
+
+      console.log('Saving project with payload:', payload);
+
+      const response = await fetch(`http://localhost:4001/project/${projectId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to save project: ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log('Project saved successfully:', result);
+      
+      // Refresh the project data to reflect the saved state
+      await fetchProjectData();
+      
+      alert('Project saved successfully!');
+    } catch (error) {
+      console.error('Error saving project:', error);
+      alert(`Failed to save project: ${error.message}`);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [nodes, edges, fetchProjectData]);
+
   // Handle animation completion by reverting edge back to normal
   const handleAnimationComplete = useCallback((edgeId) => {
     console.log(`Animation completed for edge: ${edgeId}`);
@@ -290,7 +355,11 @@ export default function App() {
         onRun={handleRun}
         onRefreshProject={fetchProjectData}
       />
-      <NodeCreationPanel onCreateNode={handleCreateNode} />
+      <NodeCreationPanel 
+        onCreateNode={handleCreateNode} 
+        onSaveProject={handleSaveProject}
+        isLoading={isLoading}
+      />
       
       {/* Global Modal */}
       <BlankPopup

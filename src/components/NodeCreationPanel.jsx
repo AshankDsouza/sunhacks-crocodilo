@@ -1,4 +1,4 @@
-export default function NodeCreationPanel({ onCreateNode }) {
+export default function NodeCreationPanel({ onCreateNode, onSaveProject, isLoading }) {
   // Generate random node names
   const generateRandomNodeName = () => {
     const prefixes = ['Gen', 'Proc', 'Node', 'Unit', 'Block'];
@@ -28,8 +28,9 @@ export default function NodeCreationPanel({ onCreateNode }) {
   };
 
   const handleSaveProject = () => {
-    // Dummy non-functional save project button
-    alert('Save Project functionality - Coming Soon!');
+    if (onSaveProject) {
+      onSaveProject();
+    }
   };
 
   return (
@@ -70,21 +71,23 @@ export default function NodeCreationPanel({ onCreateNode }) {
       {/* Dummy Save Project button */}
       <button
         onClick={handleSaveProject}
+        disabled={isLoading}
         style={{
           width: '100%',
-          background: '#28a745',
+          background: isLoading ? '#6c757d' : '#28a745',
           color: 'white',
           border: 'none',
           borderRadius: '4px',
           padding: '8px',
           fontSize: '14px',
-          cursor: 'pointer',
+          cursor: isLoading ? 'not-allowed' : 'pointer',
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'center'
+          justifyContent: 'center',
+          opacity: isLoading ? 0.7 : 1
         }}
       >
-        💾 Save Project
+        {isLoading ? '⏳ Saving...' : '💾 Save Project'}
       </button>
     </div>
   );

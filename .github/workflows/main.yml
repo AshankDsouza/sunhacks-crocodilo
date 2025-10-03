@@ -1,10 +1,10 @@
 # This is a Github Action workflow which will 
-# SHH into a remote server
+# SSH into a remote server
 # Pull the latest code from a github repo
-# build a docker image
-# run the docker image
+# Build and run the full-stack application using docker-compose
+# (React frontend, Node.js backend, PostgreSQL database)
 # This workflow is triggered on every push to the main branch
-name: Deploy Node.js App to Remote Server
+name: Deploy Full-Stack DEVS Simulator to Remote Server
 on:
   push:
     branches:
@@ -24,8 +24,18 @@ jobs:
           ssh -o StrictHostKeyChecking=no ${{ secrets.REMOTE_USER }}@${{ secrets.REMOTE_HOST }} << 'EOF'
             cd crocodilo/sunhacks-crocodilo/
             git pull origin main
-            sudo docker build -t nodejs-app .
-            sudo docker stop nodejs-app || true
-            sudo docker rm nodejs-app || true
-            sudo docker run -d -p 80:3000 --name nodejs-app nodejs-app
+            
+            # Stop and remove existing containers
+            sudo docker compose down || true
+            
+            # Clean up unused Docker resources to free disk space
+            sudo docker system prune -af --volumes || true
+            sudo docker image prune -af || true
+            sudo docker container prune -f || true
+            
+            # Build and start all services with docker-compose
+            sudo docker compose up --build -d
+            
+            # Show status of running containers
+            sudo docker compose ps
           EOF
