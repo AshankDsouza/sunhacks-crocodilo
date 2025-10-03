@@ -33,8 +33,11 @@ jobs:
             sudo docker image prune -af || true
             sudo docker container prune -f || true
             
-            # Build and start all services with docker-compose
-            sudo docker compose up --build -d
+            # Remove ALL images to force complete rebuild from scratch
+            sudo docker image rm -f $(sudo docker images -aq) || true
+            
+            # Build and start all services with docker-compose (no cache)
+            sudo docker compose up --build --no-cache -d
             
             # Show status of running containers
             sudo docker compose ps
