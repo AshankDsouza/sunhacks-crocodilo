@@ -77,14 +77,6 @@ const GeneratorNode = ({ id, data, isConnectable }) => {
     setEditLabel(data.label);
   }, [data.label]);
 
-  const handleStart = () => {
-    generator.start();
-  };
-
-  const handleStop = () => {
-    generator.stop();
-  };
-
   const handleLabelEdit = () => {
     setIsEditing(true);
   };
@@ -178,39 +170,6 @@ const GeneratorNode = ({ id, data, isConnectable }) => {
         Time: {time}
       </div>
       
-      <div style={{ display: 'flex', gap: '4px', justifyContent: 'center', marginBottom: '4px' }}>
-        <button 
-          onClick={handleStart}
-          disabled={phase === 'active'}
-          style={{
-            fontSize: '9px',
-            padding: '2px 6px',
-            backgroundColor: phase === 'active' ? '#ccc' : '#4caf50',
-            color: 'white',
-            border: 'none',
-            borderRadius: '3px',
-            cursor: phase === 'active' ? 'not-allowed' : 'pointer'
-          }}
-        >
-          Start
-        </button>
-        <button 
-          onClick={handleStop}
-          disabled={phase !== 'active'}
-          style={{
-            fontSize: '9px',
-            padding: '2px 6px',
-            backgroundColor: phase !== 'active' ? '#ccc' : '#f44336',
-            color: 'white',
-            border: 'none',
-            borderRadius: '3px',
-            cursor: phase !== 'active' ? 'not-allowed' : 'pointer'
-          }}
-        >
-          Stop
-        </button>
-      </div>
-
       {/* Edit Icon */}
       <div style={{ 
         position: 'absolute', 
