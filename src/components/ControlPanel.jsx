@@ -1,4 +1,4 @@
-const ControlPanel = ({ onRun }) => {
+const ControlPanel = ({ onRun, onRefreshProject }) => {
   return (
     <div style={{
       position: 'absolute',
@@ -33,13 +33,35 @@ const ControlPanel = ({ onRun }) => {
             cursor: 'pointer',
             fontSize: '14px',
             fontWeight: 'bold',
-            transition: 'background-color 0.2s'
+            transition: 'background-color 0.2s',
+            marginBottom: '8px'
           }}
           onMouseOver={(e) => e.target.style.backgroundColor = '#1976D2'}
           onMouseOut={(e) => e.target.style.backgroundColor = '#2196F3'}
           title="Start simulation by setting Generator1.data.step = true"
         >
           ▶ Run
+        </button>
+        
+        <button
+          onClick={onRefreshProject}
+          style={{
+            width: '100%',
+            padding: '10px 16px',
+            backgroundColor: '#4caf50',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontSize: '14px',
+            fontWeight: 'bold',
+            transition: 'background-color 0.2s'
+          }}
+          onMouseOver={(e) => e.target.style.backgroundColor = '#45a049'}
+          onMouseOut={(e) => e.target.style.backgroundColor = '#4caf50'}
+          title="Refresh project data from database"
+        >
+          🔄 Refresh
         </button>
       </div>
     </div>
