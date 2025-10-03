@@ -7,6 +7,7 @@ import GeneratorNode from './components/GeneratorNode';
 import CustomEdge from './components/CustomEdge';
 import InstructionsPanel from './components/InstructionsPanel';
 import ControlPanel from './components/ControlPanel';
+import NodeCreationPanel from './components/NodeCreationPanel';
 import BlankPopup from './components/BlankPopup';
 
 // Import initial data
@@ -112,6 +113,11 @@ export default function App() {
           : node
       )
     );
+  }, []);
+
+  // Handle creating new nodes
+  const handleCreateNode = useCallback((newNode) => {
+    setNodes(prevNodes => [...prevNodes, newNode]);
   }, []);
 
   // Handle animation completion by reverting edge back to normal
@@ -284,6 +290,7 @@ export default function App() {
         onRun={handleRun}
         onRefreshProject={fetchProjectData}
       />
+      <NodeCreationPanel onCreateNode={handleCreateNode} />
       
       {/* Global Modal */}
       <BlankPopup
