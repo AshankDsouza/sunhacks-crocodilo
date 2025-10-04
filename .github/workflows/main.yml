@@ -27,6 +27,12 @@ jobs:
             
             # Stop and remove existing containers
             sudo docker compose down || true
+
+            # Clean up unused Docker resources
+            sudo docker system prune --all 
+
+            # Remove all unused images
+            sudo docker rmi -f $(docker images -aq)
             
             # Build with no cache to ensure fresh build
             sudo docker compose build --no-cache
