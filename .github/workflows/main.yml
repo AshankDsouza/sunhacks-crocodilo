@@ -29,10 +29,10 @@ jobs:
             sudo docker compose down || true
 
             # Clean up unused Docker resources
-            sudo docker system prune --all 
+            sudo docker system prune --all -f 
 
             # Remove all unused images
-            sudo docker rmi -f $(docker images -aq)
+            sudo docker rmi -f $(docker images -aq) || true
             
             # Build with no cache to ensure fresh build
             sudo docker compose build --no-cache
