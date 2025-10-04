@@ -9,6 +9,8 @@ services:
     #   - "3000:3000"  # Remove external port - nginx handles all traffic
     expose:
       - "3000"  # Internal port for nginx proxy
+    environment:
+      - VITE_HOST=0.0.0.0  # Ensure Vite binds to all interfaces
     depends_on:
       - backend
       - db
