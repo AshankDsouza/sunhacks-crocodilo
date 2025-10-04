@@ -13,6 +13,8 @@ import BlankPopup from './components/BlankPopup';
 // Import initial data
 import { initialNodes, initialEdges } from './data/flowData';
 
+const backendUrl = 'http://20.163.14.54:4001';
+
 export default function App() {
   const [nodes, setNodes] = useState(initialNodes);
   const [edges, setEdges] = useState(initialEdges);
@@ -56,7 +58,7 @@ export default function App() {
   const fetchProjectData = useCallback(async () => {
     try {
       setIsLoading(true);
-      const response = await fetch('http://localhost:4001/project/1');
+      const response = await fetch(`${backendUrl}/project/1`);
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
