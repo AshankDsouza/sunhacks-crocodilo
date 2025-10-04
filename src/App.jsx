@@ -16,7 +16,7 @@ import { initialNodes, initialEdges } from './data/flowData';
 // const backendUrl = 'http://localhost:4001';
 // const backendUrl = 'http://20.163.14.54:4001';
 
-// Use nginx proxy path - works for production deployment
+// Use nginx proxy path - works for both HTTP and HTTPS
 const backendUrl = window.location.origin + '/api';
 
 export default function App() {
