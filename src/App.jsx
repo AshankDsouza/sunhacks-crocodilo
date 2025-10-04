@@ -160,7 +160,7 @@ export default function App() {
 
       console.log('Saving project with payload:', payload);
 
-      const response = await fetch(`http://localhost:4001/project/${projectId}`, {
+      const response = await fetch(`${backendUrl}/project/${projectId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
