@@ -17,6 +17,9 @@ const CustomEdge = ({
   const animationRef = useRef(null);
   const startTimeRef = useRef(null);
   
+  // Get the job value from data prop, fallback to "Job" if not provided
+  const jobValue = data?.job || "Job";
+  
   const [path] = getBezierPath({
     sourceX,
     sourceY,
@@ -42,9 +45,10 @@ const CustomEdge = ({
     
     const point = edgeRef.current.getPointAtLength(progress * pathLength);
     
-    // Update dot position
-    dotRef.current.setAttribute('cx', point.x);
-    dotRef.current.setAttribute('cy', point.y);
+    // Update dot group position
+    if (dotRef.current) {
+      dotRef.current.setAttribute('transform', `translate(${point.x}, ${point.y})`);
+    }
     
     if (progress < 1) {
       animationRef.current = requestAnimationFrame(animateDot);
@@ -78,13 +82,25 @@ const CustomEdge = ({
         style={style}
         fill="none"
       />
-      <circle
-        ref={dotRef}
-        r={4}
-        fill="#ff0055"
-        stroke="#fff"
-        strokeWidth={1.5}
-      />
+      <g ref={dotRef}>
+        {/* Background circle for the text */}
+        <circle
+          r={12}
+          fill="#007acc"
+          stroke="#fff"
+          strokeWidth={2}
+        />
+        {/* Job value text */}
+        <text
+          textAnchor="middle"
+          dominantBaseline="central"
+          fontSize="10"
+          fontWeight="bold"
+          fill="white"
+        >
+          {jobValue}
+        </text>
+      </g>
     </>
   );
 };

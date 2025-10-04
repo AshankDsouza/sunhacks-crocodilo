@@ -13,6 +13,8 @@ import BlankPopup from './components/BlankPopup';
 // Import initial data
 import { initialNodes, initialEdges } from './data/flowData';
 
+// const backendUrl = 'http://localhost:4001';
+
 const backendUrl = 'http://20.163.14.54:4001';
 
 export default function App() {
@@ -208,6 +210,30 @@ export default function App() {
   const handleStepComplete = useCallback((generatorId, job) => {
     console.log(`Step completed for ${generatorId}:`, job);
 
+    // Find all edges from this generator to get destination nodes
+    const outgoingEdges = edges.filter(edge => edge.source === generatorId);
+    
+    // Update destination nodes' job queues immediately
+    if (outgoingEdges.length > 0) {
+      setNodes(prevNodes => 
+        prevNodes.map(node => {
+          // Check if this node is a destination of any outgoing edge
+          const isDestination = outgoingEdges.some(edge => edge.target === node.id);
+          if (isDestination) {
+            console.log(`Adding job ${job} to destination node ${node.id}`);
+            return {
+              ...node,
+              data: {
+                ...node.data,
+                jobQueue: [...(node.data.jobQueue || []), job]
+              }
+            };
+          }
+          return node;
+        })
+      );
+    }
+
     // Change edge to animated custom edge
     setEdges(prevEdges => 
       prevEdges.map(edge => 
@@ -217,13 +243,14 @@ export default function App() {
               type: 'custom',
               data: { 
                 ...edge.data,
+                job: job, // Pass the job value to the edge
                 onAnimationComplete: handleAnimationComplete 
               }
             }
           : edge
       )
     );
-  }, [handleAnimationComplete]);
+  }, [handleAnimationComplete, edges]);
 
   // Handle run action - sets Generator1.data.step = true
   const handleRun = useCallback(() => {
@@ -275,7 +302,8 @@ export default function App() {
       ...node.data,
       onUpdateLabel: handleUpdateNodeLabel,
       onOpenModal: handleOpenModal,
-      onStepComplete: handleStepComplete
+      onStepComplete: handleStepComplete,
+      onUpdateNodeData: handleUpdateNodeData
     }
   }));
 

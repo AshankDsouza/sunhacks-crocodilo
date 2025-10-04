@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Handle, Position } from '@xyflow/react';
 import { SimulationGenerator } from './Generator';
+import ExternalEventPopup from './ExternalEventPopup';
 
 const GeneratorNode = ({ id, data, isConnectable }) => {
   const [generator] = useState(() => new SimulationGenerator(data.label, 2000));
@@ -8,6 +9,7 @@ const GeneratorNode = ({ id, data, isConnectable }) => {
   //const [count, setCount] = useState(0);
   const [isEditing, setIsEditing] = useState(false);
   const [editLabel, setEditLabel] = useState(data.label);
+  const [showEventPopup, setShowEventPopup] = useState(false);
 
   const [jobQueue, setJobQueue] = useState(data.jobQueue || []);
 
@@ -97,6 +99,22 @@ const GeneratorNode = ({ id, data, isConnectable }) => {
     }
   };
 
+  const handleInputPortClick = (e) => {
+    e.stopPropagation();
+    setShowEventPopup(true);
+  };
+
+  const handleAddExternalEvent = (eventValue) => {
+    const newJob = eventValue; // Keep it as simple integer for now
+    const updatedQueue = [...jobQueue, newJob];
+    setJobQueue(updatedQueue);
+    
+    // Update the node data if there's a callback
+    if (data.onUpdateNodeData) {
+      data.onUpdateNodeData(id, { ...data, jobQueue: updatedQueue });
+    }
+  };
+
   const getPhaseColor = () => {
     switch (phase) {
       case 'active': return '#4caf50';
@@ -121,7 +139,14 @@ const GeneratorNode = ({ id, data, isConnectable }) => {
         type="target"
         position={Position.Left}
         isConnectable={isConnectable}
-        style={{ background: '#555' }}
+        style={{ 
+          background: '#555',
+          cursor: 'pointer',
+          width: '12px',
+          height: '12px',
+          border: '2px solid #007acc'
+        }}
+        onClick={handleInputPortClick}
       />
       
       <div style={{ fontWeight: 'bold', marginBottom: '8px' }}>
@@ -212,6 +237,14 @@ const GeneratorNode = ({ id, data, isConnectable }) => {
         position={Position.Right}
         isConnectable={isConnectable}
         style={{ background: '#555' }}
+      />
+      
+      {/* External Event Popup */}
+      <ExternalEventPopup
+        isOpen={showEventPopup}
+        onClose={() => setShowEventPopup(false)}
+        onAddEvent={handleAddExternalEvent}
+        nodeId={id}
       />
     </div>
   );
