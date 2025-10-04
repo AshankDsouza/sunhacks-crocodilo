@@ -14,8 +14,10 @@ import BlankPopup from './components/BlankPopup';
 import { initialNodes, initialEdges } from './data/flowData';
 
 // const backendUrl = 'http://localhost:4001';
+// const backendUrl = 'http://20.163.14.54:4001';
 
-const backendUrl = 'http://20.163.14.54:4001';
+// Use nginx proxy path - works for production deployment
+const backendUrl = window.location.origin + '/api';
 
 export default function App() {
   const [nodes, setNodes] = useState(initialNodes);
