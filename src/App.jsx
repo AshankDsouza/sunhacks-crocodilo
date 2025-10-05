@@ -33,7 +33,7 @@ export default function App() {
   const convertDatabaseNodesToReactFlow = (dbNodes) => {
     return dbNodes.map((dbNode, index) => ({
       id: `node-${dbNode.id}`,
-      type: 'generator', // For now, all nodes are generators
+      type: 'generator', // React Flow type - for now, all use generator component
       position: { 
         x: 100 + (index * 200), // Spread nodes horizontally
         y: 100 + (index % 3) * 100 // Create rows every 3 nodes
@@ -41,6 +41,7 @@ export default function App() {
       data: {
         label: dbNode.label,
         processingTime: dbNode.processing_time || 10,
+        nodeType: dbNode.node_type || 'normal', // Store the actual node type with normal default
         jobQueue: [],
         step: false
       }
@@ -132,7 +133,7 @@ export default function App() {
       id: parseInt(node.id.replace('node-', '')) || null, // Extract ID or null for new nodes
       label: node.data.label || 'Untitled Node',         // Dummy label if missing
       processing_time: node.data.processingTime || 10,   // Dummy processing time if missing
-      node_type: node.type || 'generator'                // Dummy type if missing
+      node_type: node.data.nodeType || 'normal'       // Use nodeType from data with normal default
     }));
   };
 
@@ -254,11 +255,12 @@ export default function App() {
     );
   }, [handleAnimationComplete, edges]);
 
-  // Handle run action - sets Generator1.data.step = true
+  // Handle run action - sets step=true only for generator nodes with jobs
   const handleRun = useCallback(() => {
     setNodes(prevNodes => 
       prevNodes.map(node => 
-        node.id === 'gen1' 
+        // Trigger step only for generator nodes that have jobs in their queue
+        (node.data.nodeType === 'generator' && node.data.jobQueue && node.data.jobQueue.length > 0)
           ? { ...node, data: { ...node.data, step: true } }
           : node
       )
@@ -267,7 +269,7 @@ export default function App() {
     setTimeout(() => {
       setNodes(prevNodes => 
         prevNodes.map(node => 
-          node.id === 'gen1' 
+          node.data.step === true
             ? { ...node, data: { ...node.data, step: false } }
             : node
         )

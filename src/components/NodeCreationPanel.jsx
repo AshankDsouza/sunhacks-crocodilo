@@ -19,6 +19,7 @@ export default function NodeCreationPanel({ onCreateNode, onSaveProject, isLoadi
       data: {
         label: generateRandomNodeName(),
         processingTime: 10,
+        nodeType: 'normal', // Change default to normal
         jobQueue: [],
         step: false
       }

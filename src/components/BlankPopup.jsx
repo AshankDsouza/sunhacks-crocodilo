@@ -4,6 +4,7 @@ const BlankPopup = ({ isOpen, onClose, nodeId, nodeData, onUpdateNodeData }) => 
   const [formData, setFormData] = useState({
     label: '',
     processingTime: 10,
+    nodeType: 'normal', // Change default to normal
     jobQueue: [],
     inports: [],
     outports: []
@@ -15,6 +16,7 @@ const BlankPopup = ({ isOpen, onClose, nodeId, nodeData, onUpdateNodeData }) => 
       setFormData({
         label: nodeData.label || '',
         processingTime: nodeData.processingTime || 10,
+        nodeType: nodeData.nodeType || 'normal', // Change default to normal
         jobQueue: nodeData.jobQueue || [],
         inports: nodeData.inports || ['input'],
         outports: nodeData.outports || ['output']
@@ -219,8 +221,34 @@ const BlankPopup = ({ isOpen, onClose, nodeId, nodeData, onUpdateNodeData }) => 
                       borderRadius: '8px',
                       fontSize: '16px'
                     }}
-                    min="1"
+                    placeholder="Processing time"
                   />
+                </div>
+
+                <div>
+                  <label style={{ 
+                    display: 'block', 
+                    marginBottom: '8px', 
+                    fontWeight: 'bold',
+                    color: '#555'
+                  }}>
+                    Node Type:
+                  </label>
+                  <select
+                    value={formData.nodeType}
+                    onChange={(e) => handleInputChange('nodeType', e.target.value)}
+                    style={{
+                      width: '200px',
+                      padding: '12px',
+                      border: '2px solid #e0e0e0',
+                      borderRadius: '8px',
+                      fontSize: '16px',
+                      backgroundColor: 'white'
+                    }}
+                  >
+                    <option value="normal">Normal</option>
+                    <option value="generator">Generator</option>
+                  </select>
                 </div>
               </div>
             </div>
